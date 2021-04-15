@@ -1,0 +1,188 @@
+openapi: 3.0.3
+info:
+  title: File Upload
+  contact:
+    name: Timofey Volkov
+    email: timofey.volkov@gmail.com
+  description: |
+    The API specification of a simple web-based application that allows users to upload files organize them using tags, and then search for files using tags.
+  version: 0.0.1
+
+basePath: /v1
+
+tags:
+  - name: file
+    description: |
+      Operation on files
+
+paths:
+  /file:
+    post:
+      tags:
+        - file
+      summary: Creates a new file in the application.
+      operationId: createFile
+      description: |
+        Creates a new file in the application.
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+
+                - name: name
+                  in: body
+                  description: The file name.
+                  required: true
+                  schema:
+                    type: string
+                - name: tags
+                  in: body
+                  description: |
+                    A list of tags to associate with the file. Tags can contain any characters except -, +, and whitespace characters.
+                  schema:
+                    type: array
+                    items:
+                      type: string
+
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/CreateFileResponse'
+        400:
+          $ref: '#/definitions/400BadRequest'
+        401:
+          $ref: '#/definitions/401Unauthorized'
+        403:
+          $ref: '#/definitions/403Forbidden'
+        404:
+          $ref: '#/definitions/404NotFound'
+        406:
+          $ref: '#/definitions/406RequestNotAcceptable'
+        413:
+          $ref: '#/definitions/413PayloadTooLarge'
+        415:
+          $ref: '#/definitions/415UnsupportedMediaType'
+        429:
+          $ref: '#/definitions/429TooManyRequests'
+        500:
+          $ref: '#/definitions/500InternalServerError'
+        503:
+          $ref: '#/definitions/503ServiceUnavailable'
+
+      # security:
+      #   - files_auth:
+      #       - 'write:users'
+      #       - 'read:users'
+
+  /files/{tag_search_query}/{page}:
+    post:
+      tags:
+        - file
+      summary: Searches files for a given a tag search query and a page number
+      operationId: searchFiles
+      description: Searches files for a given a tag search query and a page number
+      parameters:
+        - name: tag_search_query
+          type: string
+          in: query
+          description: |
+            A string containing a list of tags. Tags will be separated by
+            whitespace and prefixed with either a + or a - sign. The search
+            should return all files associated with all of the + tags, excluding any
+            files tagged with any of the - tags.
+          required: true
+
+
+        - name: page
+          in: query
+          required: true
+          description: |
+            The page number to return files from. Each page contains 10 files.
+
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/SearchFilesResponse'
+        400:
+          $ref: '#/definitions/400BadRequest'
+        401:
+          $ref: '#/definitions/401Unauthorized'
+        403:
+          $ref: '#/definitions/403Forbidden'
+        404:
+          $ref: '#/definitions/404NotFound'
+        406:
+          $ref: '#/definitions/406RequestNotAcceptable'
+        413:
+          $ref: '#/definitions/413PayloadTooLarge'
+        415:
+          $ref: '#/definitions/415UnsupportedMediaType'
+        429:
+          $ref: '#/definitions/429TooManyRequests'
+        500:
+          $ref: '#/definitions/500InternalServerError'
+        503:
+          $ref: '#/definitions/503ServiceUnavailable'
+
+definitions:
+  schemas:
+    File:
+      type: object
+      description: a file
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: |
+            The UUID of the uploaded file
+        name:
+          type: string
+          description: file name
+
+  CreateFileResponse:
+    type: object
+    properties:
+      file:
+        $ref: '#/definition/schemas/File'
+
+  SearchFilesResponse:
+    type: object
+    properties:
+      total_records:
+        type: integer
+        description: |
+          Total number of files matching this search.
+      related_tags:
+        type: array
+        items:
+          type: object
+          properties:
+            tag:
+              type: string
+              description: |
+                The tag name.
+            file_count:
+              type: integer
+              description: |
+                The total number of files matching the search query that are also
+                associated with this tag.
+        description: |
+          An array of all tags associated with any of the files matching the
+          search query, excluding tags used in the search query.
+
+      files:
+        type: array
+        items:
+          type:
+            $ref: '#/definitions/schemas/File'
+
+
+

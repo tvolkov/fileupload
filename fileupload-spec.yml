@@ -1,0 +1,190 @@
+openapi: 3.0.3
+info:
+  title: File Upload
+  contact:
+    name: Timofey Volkov
+    email: timofey.volkov@gmail.com
+  description: |
+    The API specification of a simple web-based application that allows users to upload files organize them using tags, and then search for files using tags.
+  version: 0.0.1
+
+tags:
+  - name: file
+    description: |
+      Operation on files
+
+paths:
+  /file:
+    post:
+      tags:
+        - file
+      summary: Creates a new file in the application.
+      operationId: createFile
+      description: |
+        Creates a new file in the application.
+
+      requestBody:
+        $ref: '#/components/requestBodies/RequestBody'
+
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateFileResponse'
+        400:
+          $ref: '#/components/schemas/400BadRequest'
+        404:
+          $ref: '#/components/schemas/404NotFound'
+        500:
+          $ref: '#/components/schemas/500InternalServerError'
+
+
+  /files/{tag_search_query}/{page}:
+    post:
+      tags:
+        - file
+      summary: Searches files for a given a tag search query and a page number
+      operationId: searchFiles
+      description: Searches files for a given a tag search query and a page number
+      parameters:
+        - name: tag_search_query
+          schema:
+            type: string
+          in: path
+          description: |
+            A string containing a list of tags. Tags will be separated by
+            whitespace and prefixed with either a + or a - sign. The search
+            should return all files associated with all of the + tags, excluding any
+            files tagged with any of the - tags.
+          required: true
+        - name: page
+          schema:
+            type: string
+          in: path
+          required: true
+          description: |
+            The page number to return files from. Each page contains 10 files.
+
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchFilesResponse'
+        400:
+          $ref: '#/components/schemas/400BadRequest'
+        404:
+          $ref: '#/components/schemas/404NotFound'
+        500:
+          $ref: '#/components/schemas/500InternalServerError'
+
+components:
+  requestBodies:
+    RequestBody:
+      description: A JSON object containing pet information
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RequestBodySchema'
+  schemas:
+    RequestBodySchema:
+      type: object
+      properties:
+        name:
+          description: The file name.
+          type: string
+        content:
+          description: text file contents.
+          type: string
+        tags:
+          description: |
+            A list of tags to associate with the file. Tags can contain any characters except -, +, and whitespace characters.
+          type: array
+          items:
+            type: string
+    File:
+      type: object
+      description: a file
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: |
+            The UUID of the uploaded file
+        name:
+          type: string
+          description: file name
+
+    CreateFileResponse:
+      type: object
+      properties:
+        file:
+          $ref: '#/components/schemas/File'
+
+    SearchFilesResponse:
+      type: object
+      properties:
+        total_records:
+          type: integer
+          description: |
+            Total number of files matching this search.
+        related_tags:
+          type: array
+          items:
+            type: object
+            properties:
+              tag:
+                type: string
+                description: |
+                  The tag name.
+              file_count:
+                type: integer
+                description: |
+                  The total number of files matching the search query that are also
+                  associated with this tag.
+          description: |
+            An array of all tags associated with any of the files matching the
+            search query, excluding tags used in the search query.
+
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
+
+    Error:
+      type: object
+      description: API error
+      properties:
+        code:
+          type: string
+          description: Error Code represents a alpha-numeric error code received from the error.
+          example: '400'
+        description:
+          type: string
+          description: Message represents a textual description of a given error code.
+          example: 'Bad request'
+
+    400BadRequest:
+      description: Bad Request.
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+
+    404NotFound:
+      description: Not Found.
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+
+    500InternalServerError:
+      description: Internal Server Error.
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+
+
+

@@ -1,6 +1,6 @@
 # fileupload
-file upload
+file upload API
 
-## thigs I've deliberately left behind
+## Thigs I've deliberately left behind for the sake of simplicity.
  * authentication/authorization
- * more granluar error response codes, e.g. 415, 406, 429, 401, 403, 413 etc etc
+ * more granular error response codes, e.g. 415, 406, 429, 401, 403, 413 etc etc

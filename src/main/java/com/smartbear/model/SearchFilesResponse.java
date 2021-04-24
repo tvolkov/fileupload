@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.util.List;
 
+@Data
 public class SearchFilesResponse {
 
     @JsonProperty("total_records")
@@ -17,20 +18,20 @@ public class SearchFilesResponse {
     private List<File> files;
 
     @Data
-    static class File {
+    public static class File {
         @JsonProperty("uuid")
-        private String uuid;
+        private final String uuid;
 
         @JsonProperty("name")
-        private String name;
+        private final String name;
     }
 
     @Data
-    static class RelatedTag {
+    public static class RelatedTag {
         @JsonProperty("tag")
-        private String tag;
+        private final String tag;
 
         @JsonProperty("file_count")
-        private Integer fileCount;
+        private final Long fileCount;
     }
 }

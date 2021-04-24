@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class CreateFileResponse {
     @JsonProperty("uuid")
-    private String uuid;
+    private final String uuid;
 
 }

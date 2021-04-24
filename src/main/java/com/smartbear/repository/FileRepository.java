@@ -13,6 +13,6 @@ import java.util.Set;
 public interface FileRepository extends MongoRepository<File, String> {
 //    db.files.find( { $and: [ { tags: { $all: ["tag2", "tag3"] } }, { tags: { $nin: ["tag4" ] } } ] } );
     @Query("{ $and: [ { tags: { $all: ?0 } }, { tags: { $nin: ?1 } } ] }")
-    List<File> findByTags(@Param("plusTags") Set<String> plusTags,
+    List<File> findFilesByTags(@Param("plusTags") Set<String> plusTags,
                           @Param("minusTags") Set<String> minusTags);
 }

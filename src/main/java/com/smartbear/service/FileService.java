@@ -80,10 +80,7 @@ public class FileService {
             Set<String> tagsForFile = new HashSet<>(f.getTags());
             tagsForFile.removeAll(tagsInQuery);
             for (String tag : tagsForFile) {
-//                result.add(new SearchFilesResponse.RelatedTag(tag, filesByTags.stream().filter(file -> file.getTags().contains(tag)).count()));
                 tagsSummary.computeIfAbsent(tag, tagKey -> filesByTags.stream().filter(file -> file.getTags().contains(tagKey)).count());
-//                Long count = filesByTags.stream().filter(file -> file.getTags().contains(tag)).count();
-//                tagsSummary.compute(tag, (t, oldNumber) -> oldNumber == null ? count : oldNumber + count);
             }
         }
 

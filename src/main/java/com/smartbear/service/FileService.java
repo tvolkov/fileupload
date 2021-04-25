@@ -34,21 +34,21 @@ public class FileService {
     }
 
     private File newFile(CreateFileRequest createFileRequest) {
-        File file = new File();
-        file.setName(createFileRequest.getName());
-        file.setUuid(UUID.randomUUID().toString());
-        file.setTags(new HashSet<>(createFileRequest.getTags()));
-        return file;
+        return File.builder()
+                .name(createFileRequest.getName())
+                .uuid(UUID.randomUUID().toString())
+                .tags(new HashSet<>(createFileRequest.getTags()))
+                .build();
     }
 
     public SearchFilesResponse search(String tagSearchQuery, int page) {
         Set<String> inclusionTags = new HashSet<>();
         Set<String> exclusionTags = new HashSet<>();
         StringTokenizer stringTokenizer = new StringTokenizer(tagSearchQuery, "+-", true);
-        while (stringTokenizer.hasMoreTokens()){
+        while (stringTokenizer.hasMoreTokens()) {
             String nextToken = stringTokenizer.nextToken();
             log.debug(nextToken);
-            if ("+".equals(nextToken)){
+            if ("+" .equals(nextToken)) {
                 inclusionTags.add(stringTokenizer.nextToken());
             } else {
                 exclusionTags.add(stringTokenizer.nextToken());
@@ -59,7 +59,7 @@ public class FileService {
 
         if (exclusionTags.isEmpty()) {
             filesByTags = fileRepository.findFilesByInclusionTags(inclusionTags);
-        } else if (inclusionTags.isEmpty()){
+        } else if (inclusionTags.isEmpty()) {
             filesByTags = fileRepository.getFilesByExclusionTags(exclusionTags);
         } else {
             filesByTags = fileRepository.findFilesByTags(inclusionTags, exclusionTags, PageRequest.of(page, 1));

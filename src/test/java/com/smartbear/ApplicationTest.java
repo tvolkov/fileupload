@@ -1,19 +1,17 @@
 package com.smartbear;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartbear.model.CreateFileRequest;
 import com.smartbear.model.CreateFileResponse;
+import com.smartbear.model.SearchFilesResponse;
+import com.smartbear.model.entity.File;
+import com.smartbear.repository.FileRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -25,8 +23,11 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -34,8 +35,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = Application.class)
 @AutoConfigureMockMvc
 @ExtendWith(SpringExtension.class)
-//@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-//@DataMongoTest(excludeAutoConfiguration = EmbeddedMongoAutoConfiguration.class)
 @Testcontainers
 @ActiveProfiles("test")
 class ApplicationTest {
@@ -54,6 +53,9 @@ class ApplicationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private FileRepository fileRepository;
+
     @LocalServerPort
     protected int port;
 
@@ -69,5 +71,73 @@ class ApplicationTest {
 
         CreateFileResponse createFileResponse = objectMapper.readValue(createFileResponseStr, CreateFileResponse.class);
         assertNotNull(createFileResponse.getUuid());
+    }
+
+    @Test
+    void testSearchFiles() throws Exception {
+        insertTestFilesToDb();
+
+        String searchFileResponseStr = mockMvc.perform(MockMvcRequestBuilders
+        .get("http://localhost:{port}/files/+tag2+tag3-tag4/0", port)
+        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        SearchFilesResponse searchFilesResponse = objectMapper.readValue(searchFileResponseStr, SearchFilesResponse.class);
+
+        assertEquals(1, searchFilesResponse.getTotalRecords());
+        assertEquals(1, searchFilesResponse.getFiles().size());
+        assertEquals("file1", searchFilesResponse.getFiles().get(0).getName());
+        assertEquals(2, searchFilesResponse.getRelatedTags().size());
+        assertEquals("tag1", searchFilesResponse.getRelatedTags().get(0).getTag());
+
+        searchFileResponseStr = mockMvc.perform(MockMvcRequestBuilders
+                .get("http://localhost:{port}/files/+tag2+tag3-tag4/1", port)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+        searchFilesResponse = objectMapper.readValue(searchFileResponseStr, SearchFilesResponse.class);
+
+        assertEquals(1, searchFilesResponse.getTotalRecords());
+        assertEquals(1, searchFilesResponse.getFiles().size());
+        assertEquals("file3", searchFilesResponse.getFiles().get(0).getName());
+        assertEquals(1, searchFilesResponse.getRelatedTags().size());
+        assertEquals("tag5", searchFilesResponse.getRelatedTags().get(0).getTag());
+    }
+
+    private void insertTestFilesToDb() {
+        fileRepository.save(
+                File.builder()
+                .name("file1")
+                .uuid(UUID.randomUUID().toString())
+                .tags(new HashSet<>(Arrays.asList("tag1", "tag2", "tag3", "tag5")))
+                .build());
+
+        fileRepository.save(
+                File.builder()
+                        .name("file2")
+                        .uuid(UUID.randomUUID().toString())
+                        .tags(new HashSet<>(Arrays.asList("tag2")))
+                        .build());
+
+        fileRepository.save(
+                File.builder()
+                        .name("file3")
+                        .uuid(UUID.randomUUID().toString())
+                        .tags(new HashSet<>(Arrays.asList("tag2", "tag3", "tag5")))
+                        .build());
+
+        fileRepository.save(
+                File.builder()
+                        .name("file4")
+                        .uuid(UUID.randomUUID().toString())
+                        .tags(new HashSet<>(Arrays.asList("tag2", "tag3", "tag4", "tag5")))
+                        .build());
+
+        fileRepository.save(
+                File.builder()
+                        .name("file5")
+                        .uuid(UUID.randomUUID().toString())
+                        .tags(new HashSet<>(Arrays.asList("tag3", "tag4")))
+                        .build());
     }
 }

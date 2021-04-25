@@ -15,9 +15,12 @@ public interface FileRepository extends MongoRepository<File, String> {
      * db.files.find( { $and: [ { tags: { $all: ["tag2", "tag3"] } }, { tags: { $nin: ["tag4" ] } } ] } );
      */
     @Query("{ $and: [ { tags: { $all: ?0 } }, { tags: { $nin: ?1 } } ] }")
-    List<File> findFilesByTags(Set<String> inclusionTags, Set<String> exlustionTags, Pageable pageable);
+    List<File> findFilesByTagsPaginated(Set<String> inclusionTags, Set<String> exlustionTags, Pageable pageable);
 
-    @Query("{ tags: { $in: ?0 } }")
+    @Query("{ $and: [ { tags: { $all: ?0 } }, { tags: { $nin: ?1 } } ] }")
+    List<File> findFilesByTags(Set<String> inclusionTags, Set<String> exlustionTags);
+
+    @Query("{ tags: { $all: ?0 } }")
     List<File> findFilesByInclusionTags(Set<String> inclusionTags);
 
     @Query("{ tags: { $nin: ?0 } }")

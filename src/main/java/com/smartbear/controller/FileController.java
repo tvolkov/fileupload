@@ -27,8 +27,13 @@ public class FileController {
     }
 
     @GetMapping(value = "/files/{tag_search_query}/{page}", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<SearchFilesResponse> searchFiles(@PathVariable("tag_search_query") @Pattern(regexp = "[+\\-][a-zA-Z0-9]+") String tagSearchQuery,
+    public ResponseEntity<SearchFilesResponse> searchFilesPaginated(@PathVariable("tag_search_query") @Pattern(regexp = "[+\\-][a-zA-Z0-9]+") String tagSearchQuery,
                                                            @PathVariable("page") @Pattern(regexp = "\\d") int page){
         return ResponseEntity.ok(fileService.search(tagSearchQuery, page));
+    }
+
+    @GetMapping(value = "/files/{tag_search_query}", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<SearchFilesResponse> searchFiles(@PathVariable("tag_search_query") @Pattern(regexp = "[+\\-][a-zA-Z0-9]+") String tagSearchQuery){
+        return ResponseEntity.ok(fileService.search(tagSearchQuery));
     }
 }

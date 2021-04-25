@@ -41,6 +41,10 @@ public class FileService {
                 .build();
     }
 
+    public SearchFilesResponse search(String tagSearchQuery) {
+        return search(tagSearchQuery, -1);
+    }
+
     public SearchFilesResponse search(String tagSearchQuery, int page) {
         Set<String> inclusionTags = new HashSet<>();
         Set<String> exclusionTags = new HashSet<>();
@@ -62,7 +66,10 @@ public class FileService {
         } else if (inclusionTags.isEmpty()) {
             filesByTags = fileRepository.getFilesByExclusionTags(exclusionTags);
         } else {
-            filesByTags = fileRepository.findFilesByTags(inclusionTags, exclusionTags, PageRequest.of(page, 1));
+            if (page >= 0)
+                filesByTags = fileRepository.findFilesByTagsPaginated(inclusionTags, exclusionTags, PageRequest.of(page, pageSize));
+            else
+                filesByTags = fileRepository.findFilesByTags(inclusionTags, exclusionTags);
         }
 
         SearchFilesResponse searchFilesResponse = new SearchFilesResponse();

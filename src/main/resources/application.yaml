@@ -1,2 +1,9 @@
 page:
   size: 1
+server:
+  servlet:
+    context-path: /api/v1
+
+spring:
+  main:
+    banner-mode: 'off'

@@ -5,6 +5,7 @@ import com.smartbear.model.CreateFileResponse;
 import com.smartbear.model.SearchFilesResponse;
 import com.smartbear.service.FileService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class FileController {
 
     @PostMapping(value = "/file", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<CreateFileResponse> createFile(@RequestBody CreateFileRequest createFileRequest){
-        return ResponseEntity.ok(fileService.createFile(createFileRequest));
+        return ResponseEntity.status(HttpStatus.CREATED).body(fileService.createFile(createFileRequest));
     }
 
     @GetMapping(value = "/files/{tag_search_query}/{page}", produces = APPLICATION_JSON_VALUE)

@@ -9,8 +9,8 @@ import java.util.List;
 public class CreateFileRequest {
 
     @JsonProperty("name")
-    private String name;
+    private final String name;
 
     @JsonProperty("tags")
-    private List<String> tags;
+    private final List<String> tags;
 }

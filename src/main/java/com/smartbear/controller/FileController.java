@@ -25,7 +25,7 @@ public class FileController {
 
     @GetMapping("/files/{tag_search_query}/{page}")
     public ResponseEntity<SearchFilesResponse> searchFiles(@PathVariable("tag_search_query") @Pattern(regexp = "[+\\-][a-zA-Z0-9]+") String tagSearchQuery,
-                                                           @PathVariable("page") @Pattern(regexp = "\\d") String page){
+                                                           @PathVariable("page") @Pattern(regexp = "\\d") int page){
         return ResponseEntity.ok(fileService.search(tagSearchQuery, page));
     }
 

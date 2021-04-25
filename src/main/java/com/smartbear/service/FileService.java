@@ -7,6 +7,8 @@ import com.smartbear.model.entity.File;
 import com.smartbear.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -22,6 +24,9 @@ public class FileService {
 
     private final FileRepository fileRepository;
 
+    @Value("${page.size}")
+    private int pageSize;
+
     public CreateFileResponse createFile(CreateFileRequest createFileRequest) {
         File file = newFile(createFileRequest);
         fileRepository.save(file);
@@ -36,7 +41,7 @@ public class FileService {
         return file;
     }
 
-    public SearchFilesResponse search(String tagSearchQuery, String page) {
+    public SearchFilesResponse search(String tagSearchQuery, int page) {
         Set<String> inclusionTags = new HashSet<>();
         Set<String> exclusionTags = new HashSet<>();
         StringTokenizer stringTokenizer = new StringTokenizer(tagSearchQuery, "+-", true);
@@ -57,7 +62,7 @@ public class FileService {
         } else if (inclusionTags.isEmpty()){
             filesByTags = fileRepository.getFilesByExclusionTags(exclusionTags);
         } else {
-            filesByTags = fileRepository.findFilesByTags(inclusionTags, exclusionTags);
+            filesByTags = fileRepository.findFilesByTags(inclusionTags, exclusionTags, PageRequest.of(page, 1));
         }
 
         SearchFilesResponse searchFilesResponse = new SearchFilesResponse();

@@ -13,6 +13,9 @@ tags:
     description: |
       Operation on files
 
+servers:
+  - url: http://localhost:8080/api/v1
+
 paths:
   /file:
     post:
@@ -66,6 +69,40 @@ paths:
           required: true
           description: |
             The page number to return files from. Each page contains 10 files.
+
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchFilesResponse'
+        400:
+          $ref: '#/components/schemas/400BadRequest'
+        404:
+          $ref: '#/components/schemas/404NotFound'
+        500:
+          $ref: '#/components/schemas/500InternalServerError'
+
+  /files/{tag_search_query}:
+    post:
+      tags:
+        - file
+      summary: Searches files for a given a tag search query and a page number
+      operationId: searchAllFiles
+      description: Searches files for a given a tag search query and a page number
+      parameters:
+        - name: tag_search_query
+          schema:
+            type: string
+          in: path
+          description: |
+            A string containing a list of tags. Tags will be separated by
+            whitespace and prefixed with either a + or a - sign. The search
+            should return all files associated with all of the + tags, excluding any
+            files tagged with any of the - tags.
+          required: true
+
 
       responses:
         200:

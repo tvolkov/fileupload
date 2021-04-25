@@ -63,7 +63,7 @@ class ApplicationTest {
     protected int port;
 
     @BeforeEach
-    void initDb(){
+    void initDb() {
         fileRepository.deleteAll();
         insertTestFilesToDb();
     }
@@ -84,9 +84,9 @@ class ApplicationTest {
 
     @Test
     void testSearchFiles() throws Exception {
-        String searchFileResponseStr = mockMvc.perform(MockMvcRequestBuilders
-        .get("http://localhost:{port}/files/+tag2+tag3-tag4/0", port)
-        .contentType(APPLICATION_JSON))
+        var searchFileResponseStr = mockMvc.perform(MockMvcRequestBuilders
+                .get("http://localhost:{port}/files/+tag2+tag3-tag4/0", port)
+                .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
         SearchFilesResponse searchFilesResponse = objectMapper.readValue(searchFileResponseStr, SearchFilesResponse.class);
@@ -164,13 +164,21 @@ class ApplicationTest {
         assertEquals(0, searchFilesResponse.getRelatedTags().size());
     }
 
+    @Test
+    void testInvalidSearchQuery() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders
+                .get("http://localhost:{port}/files/!@#%", port)
+                .contentType(APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
     private void insertTestFilesToDb() {
         fileRepository.save(
                 File.builder()
-                .name("file1")
-                .uuid(UUID.randomUUID().toString())
-                .tags(new HashSet<>(Arrays.asList("tag1", "tag2", "tag3", "tag5")))
-                .build());
+                        .name("file1")
+                        .uuid(UUID.randomUUID().toString())
+                        .tags(new HashSet<>(Arrays.asList("tag1", "tag2", "tag3", "tag5")))
+                        .build());
 
         fileRepository.save(
                 File.builder()

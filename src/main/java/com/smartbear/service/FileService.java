@@ -1,5 +1,7 @@
 package com.smartbear.service;
 
+import com.smartbear.exception.InvalidPageException;
+import com.smartbear.exception.InvalidQueryException;
 import com.smartbear.model.CreateFileRequest;
 import com.smartbear.model.CreateFileResponse;
 import com.smartbear.model.SearchFilesResponse;
@@ -42,10 +44,25 @@ public class FileService {
     }
 
     public SearchFilesResponse search(String tagSearchQuery) {
-        return search(tagSearchQuery, -1);
+        return search(tagSearchQuery, "");
     }
 
-    public SearchFilesResponse search(String tagSearchQuery, int page) {
+    public SearchFilesResponse search(String tagSearchQuery, String pageStr) {
+        if (!tagSearchQuery.matches("[+\\-a-zA-Z0-9]+")) {
+            throw new InvalidQueryException(tagSearchQuery);
+        }
+
+        int page;
+        if (pageStr.isEmpty() || pageStr.isBlank()) {
+            page = -1;
+        } else {
+            try {
+                page = Integer.parseInt(pageStr);
+            } catch (NumberFormatException e) {
+                throw new InvalidPageException(pageStr);
+            }
+        }
+
         Set<String> inclusionTags = new HashSet<>();
         Set<String> exclusionTags = new HashSet<>();
         StringTokenizer stringTokenizer = new StringTokenizer(tagSearchQuery, "+-", true);
@@ -92,10 +109,17 @@ public class FileService {
             Set<String> tagsForFile = new HashSet<>(f.getTags());
             tagsForFile.removeAll(tagsInQuery);
             for (String tag : tagsForFile) {
-                tagsSummary.computeIfAbsent(tag, tagKey -> filesByTags.stream().filter(file -> file.getTags().contains(tagKey)).count());
+                tagsSummary.computeIfAbsent(tag, tagKey -> filesByTags
+                        .stream()
+                        .filter(file -> file.getTags().contains(tagKey))
+                        .count());
             }
         }
 
-        return tagsSummary.entrySet().stream().map(entry -> new SearchFilesResponse.RelatedTag(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+        return tagsSummary
+                .entrySet()
+                .stream()
+                .map(entry -> new SearchFilesResponse.RelatedTag(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
     }
 }
